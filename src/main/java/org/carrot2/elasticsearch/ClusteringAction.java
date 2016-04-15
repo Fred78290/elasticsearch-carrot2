@@ -720,8 +720,8 @@ public class ClusteringAction
                 TransportSearchAction searchAction,
                 ControllerSingleton controllerSingleton,
                 ActionFilters actionFilters,
-                IndexNameExpressionResolver indexNameExpressionResolver, TaskManager taskManager) {
-            super(settings, ClusteringAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, taskManager);
+                IndexNameExpressionResolver indexNameExpressionResolver) {
+            super(settings, ClusteringAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, transportService.getTaskManager());
             this.searchAction = searchAction;
             this.controllerSingleton = controllerSingleton;
             transportService.registerRequestHandler(

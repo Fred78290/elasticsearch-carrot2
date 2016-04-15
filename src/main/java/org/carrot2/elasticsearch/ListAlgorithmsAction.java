@@ -37,6 +37,10 @@ import org.elasticsearch.threadpool.ThreadPool;
 import org.elasticsearch.transport.TransportChannel;
 import org.elasticsearch.transport.TransportRequestHandler;
 import org.elasticsearch.transport.TransportService;
+import org.carrot2.text.vsm.LogTfIdfTermWeighting;
+import org.carrot2.text.vsm.TermDocumentMatrixBuilder;
+import org.carrot2.util.attribute.AttributeBinder;
+import org.carrot2.text.vsm.LogTfIdfTermWeighting;
 
 /**
  * List all available clustering algorithms.
@@ -158,8 +162,8 @@ public class ListAlgorithmsAction
                 TransportService transportService,
                 ControllerSingleton controllerSingleton,
                 ActionFilters actionFilters,
-                IndexNameExpressionResolver indexNameExpressionResolver, TaskManager taskManager) {
-            super(settings, ListAlgorithmsAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, taskManager);
+                IndexNameExpressionResolver indexNameExpressionResolver) {
+            super(settings, ListAlgorithmsAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, transportService.getTaskManager());
             this.controllerSingleton = controllerSingleton;
             transportService.registerRequestHandler(
                     ListAlgorithmsAction.NAME,
