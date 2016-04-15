@@ -73,6 +73,7 @@ import org.elasticsearch.search.internal.InternalSearchHit;
 import org.elasticsearch.search.internal.InternalSearchHits;
 import org.elasticsearch.search.internal.InternalSearchResponse;
 import org.elasticsearch.search.profile.InternalProfileShardResults;
+import org.elasticsearch.tasks.TaskManager;
 import org.elasticsearch.threadpool.ThreadPool;
 import org.elasticsearch.transport.TransportChannel;
 import org.elasticsearch.transport.TransportRequestHandler;
@@ -719,8 +720,8 @@ public class ClusteringAction
                 TransportSearchAction searchAction,
                 ControllerSingleton controllerSingleton,
                 ActionFilters actionFilters,
-                IndexNameExpressionResolver indexNameExpressionResolver) {
-            super(settings, ClusteringAction.NAME, threadPool, actionFilters, indexNameExpressionResolver);
+                IndexNameExpressionResolver indexNameExpressionResolver, TaskManager taskManager) {
+            super(settings, ClusteringAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, taskManager);
             this.searchAction = searchAction;
             this.controllerSingleton = controllerSingleton;
             transportService.registerRequestHandler(
@@ -1045,7 +1046,7 @@ outer:
           return sb.toString();
         }
     
-        private final class TransportHandler implements TransportRequestHandler<ClusteringActionRequest> {
+        private final class TransportHandler extends TransportRequestHandler<ClusteringActionRequest> {
             @Override
             public void messageReceived(final ClusteringActionRequest request, final TransportChannel channel) throws Exception {
                 execute(request, new ActionListener<ClusteringActionResponse>() {
@@ -1120,9 +1121,11 @@ outer:
             // Parse incoming arguments depending on the HTTP method used to make
             // the request.
             final ClusteringActionRequestBuilder actionBuilder = new ClusteringActionRequestBuilder(client);
+
+            SearchRequest searchRequest = new SearchRequest();
+
             switch (request.method()) {
                 case POST:
-                    SearchRequest searchRequest = new SearchRequest();
                     searchRequest.indices(Strings.splitStringByCommaToArray(request.param("index")));
                     searchRequest.types(Strings.splitStringByCommaToArray(request.param("type")));
                     actionBuilder.setSearchRequest(searchRequest);
@@ -1130,7 +1133,8 @@ outer:
                     break;
 
                 case GET:
-                    actionBuilder.setSearchRequest(RestSearchAction.parseSearchRequest(request, parseFieldMatcher));
+                    RestSearchAction.parseSearchRequest(searchRequest, request, parseFieldMatcher, request.content());
+                    actionBuilder.setSearchRequest(searchRequest);
                     fillFromGetRequest(actionBuilder, request);
                     break;
 

@@ -32,6 +32,7 @@ import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestRequest.Method;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.tasks.TaskManager;
 import org.elasticsearch.threadpool.ThreadPool;
 import org.elasticsearch.transport.TransportChannel;
 import org.elasticsearch.transport.TransportRequestHandler;
@@ -157,8 +158,8 @@ public class ListAlgorithmsAction
                 TransportService transportService,
                 ControllerSingleton controllerSingleton,
                 ActionFilters actionFilters,
-                IndexNameExpressionResolver indexNameExpressionResolver) {
-            super(settings, ListAlgorithmsAction.NAME, threadPool, actionFilters, indexNameExpressionResolver);
+                IndexNameExpressionResolver indexNameExpressionResolver, TaskManager taskManager) {
+            super(settings, ListAlgorithmsAction.NAME, threadPool, actionFilters, indexNameExpressionResolver, taskManager);
             this.controllerSingleton = controllerSingleton;
             transportService.registerRequestHandler(
                     ListAlgorithmsAction.NAME,
@@ -173,7 +174,7 @@ public class ListAlgorithmsAction
             listener.onResponse(new ListAlgorithmsActionResponse(controllerSingleton.getAlgorithms()));
         }
 
-        private final class TransportHandler implements TransportRequestHandler<ListAlgorithmsActionRequest> {
+        private final class TransportHandler extends TransportRequestHandler<ListAlgorithmsActionRequest> {
             @Override
             public void messageReceived(final ListAlgorithmsActionRequest request, 
                                         final TransportChannel channel) throws Exception {
